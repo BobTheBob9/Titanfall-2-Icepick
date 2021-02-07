@@ -54,22 +54,51 @@ namespace Icepick.Mods
 					Process.Start( LaunchViaSteamUrl );
 					await WatchAndInject( TitanfallProcessName, SteamInjectionTimeout );
 					break;
+				case Launcher.Unpacked:
+					try
+                    {
+						Process newProc = Process.Start("Titanfall2-unpacked.exe", "-multiple");
+						await WatchAndInject(newProc.ProcessName, OriginInjectionTimeout, newProc.Id);
+					}
+					catch (Exception ex)
+                    {
+						MessageBox.Show(ex.ToString());
+                    }
+					break;
 				default:
 					throw new NotImplementedException();
 			}
 		}
 
-		protected static async Task WatchAndInject( string gamePath, int injectionTimeout = OriginInjectionTimeout )
+		protected static async Task WatchAndInject( string gamePath, int injectionTimeout = OriginInjectionTimeout, int knownPID = -1 )
 		{
 			string gameProcessName = System.IO.Path.GetFileNameWithoutExtension( gamePath );
 			DateTime startTime = DateTime.Now;
+
+			// HACK: delay this because the launcher is built for late injection normally, can fail if we inject too early
+			await Task.Delay(1000);  
 
 			while ( (DateTime.Now - startTime).TotalSeconds < injectionTimeout )
 			{
 				Process[] ttfProcesses = Process.GetProcessesByName( gameProcessName );
 				if( ttfProcesses.Length > 0 )
 				{
-					Process ttfProcess = ttfProcesses[ 0 ];
+					Process ttfProcess = ttfProcesses[0];
+					if (knownPID != -1)
+                    {
+						// loop through all processes until we find the one we're trying to inject into
+						foreach (Process proc in ttfProcesses)
+							if (proc.Id == knownPID)
+                            {
+								foreach (ProcessModule module in ttfProcess.Modules)
+									if (module.ModuleName == "tier0.dll")
+                                    {
+										InjectSDK(proc);
+										return;
+									}
+							}
+                    }
+					
 					try
 					{
 						Process potentialOriginProcess = ttfProcess.GetParentProcess();

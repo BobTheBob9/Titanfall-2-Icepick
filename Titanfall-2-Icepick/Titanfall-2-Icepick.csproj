@@ -204,5 +204,8 @@
     <Resource Include="Images\launcher-origin.png" />
     <Resource Include="Images\launcher-steam.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\launcher-unpacked.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
