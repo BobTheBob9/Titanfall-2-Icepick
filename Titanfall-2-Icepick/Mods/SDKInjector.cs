@@ -75,29 +75,29 @@ namespace Icepick.Mods
 			string gameProcessName = System.IO.Path.GetFileNameWithoutExtension( gamePath );
 			DateTime startTime = DateTime.Now;
 
-			// HACK: delay this because the launcher is built for late injection normally, can fail if we inject too early
-			await Task.Delay(1000);  
-
 			while ( (DateTime.Now - startTime).TotalSeconds < injectionTimeout )
 			{
+				// HACK: delay this first loop because the launcher is built for late injection normally, can fail if we inject too early
+				await Task.Delay(1000);
+
 				Process[] ttfProcesses = Process.GetProcessesByName( gameProcessName );
 				if( ttfProcesses.Length > 0 )
 				{
 					Process ttfProcess = ttfProcesses[0];
-					if (knownPID != -1)
-                    {
-						// loop through all processes until we find the one we're trying to inject into
-						foreach (Process proc in ttfProcesses)
-							if (proc.Id == knownPID)
-                            {
-								foreach (ProcessModule module in ttfProcess.Modules)
-									if (module.ModuleName == "tier0.dll")
-                                    {
-										InjectSDK(proc);
-										return;
-									}
-							}
-                    }
+					// loop through all processes until we find the one we're trying to inject into
+					foreach (Process proc in ttfProcesses)
+						if (proc.Id == knownPID)
+                        {
+							InjectSDK(proc);
+							return;
+							// this causes injection to fail???
+							//foreach (ProcessModule module in ttfProcess.Modules)
+							//	if (module.ModuleName == "tier0.dll")
+                            //    {
+							//		InjectSDK(proc);
+							//		return;
+							//	}
+						}
 					
 					try
 					{
@@ -129,8 +129,6 @@ namespace Icepick.Mods
 						}
 					}
 				}
-
-				await Task.Delay( 1000 );
 			}
 
 			// Will only reach here if injection doesn't occur within the timeout period, so log an event and show a popup

@@ -20,6 +20,7 @@ namespace Icepick.Mods
 		public string CurrentReleaseId;
 		public string ImagePath;
 		public string Directory;
+		public bool Enabled = true;
 		public bool RequiresUpdate { get; private set; }
 
 		public delegate void ModStateUpdatedDelegate();
@@ -37,6 +38,12 @@ namespace Icepick.Mods
 				string Contents = reader.ReadToEnd();
 				reader.Close();
 				reader.Dispose();
+
+				if ( Contents.StartsWith("disabled") )
+                {
+					Enabled = false;
+					Contents = Contents.Substring( "disabled".Length );
+                }					
 
 				Definition = JsonConvert.DeserializeObject<TitanfallModDefinition>( Contents );
 			}

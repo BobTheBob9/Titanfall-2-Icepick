@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.IO;
 
 namespace Icepick.Controls
 {
@@ -54,6 +55,7 @@ namespace Icepick.Controls
 			InitializeComponent();
 			Mod = mod;
 			Mod.OnStatusUpdated += Mod_OnStatusUpdated;
+            MouseDoubleClick += OnDoubleClick;
 
 			ModName = mod.Definition?.Name;
 			ModDescription = mod.Definition?.Description;
@@ -62,10 +64,12 @@ namespace Icepick.Controls
 				ModImage = System.IO.Path.Combine( Environment.CurrentDirectory, mod.ImagePath );
 			}
 
+			RefreshNameAndImageForDisabledState();
+
 			Mod_OnStatusUpdated();
 		}
 
-		public Mods.TitanfallMod Mod { get; set; }
+        public Mods.TitanfallMod Mod { get; set; }
 
 		public string ModName
 		{
@@ -195,5 +199,70 @@ namespace Icepick.Controls
 			TooltipText.Text = "This mod is up to date!";
 		}
 
+		private void OnDoubleClick(object sender, MouseButtonEventArgs e)
+		{
+			// honestly this is all really hacky but it's good enough and i wanted to implement this without touching ttf2sdk, be sure to refactor when writing new launcher
+			try
+            {
+				string jsonPath = System.IO.Path.Combine( Mod.Directory, "mod.json" );
+
+				string jsonContent = File.ReadAllText( jsonPath );
+				if ( Mod.Enabled )
+					jsonContent = "disabled" + jsonContent; // prevents it from being a valid json file so ttf2sdk won't load it
+				else
+					jsonContent = jsonContent.Substring( "disabled".Length ); // make it valid again
+
+				File.WriteAllText(jsonPath, jsonContent);
+
+				Mod.Enabled = !Mod.Enabled;
+				RefreshNameAndImageForDisabledState();
+			}
+			catch ( IOException ex )
+            {
+				MessageBox.Show( $"Encountered an exception when enabling or disabling a mod: {ex}\nThe mod's mod.json file may be unable to be written to!" );
+            }
+		}
+
+		private void RefreshNameAndImageForDisabledState()
+		{
+			if ( string.IsNullOrEmpty(Mod.ImagePath) )
+				ModImage = "pack://application:,,,/Titanfall-2-Icepick;component/Images/icepick-logo.png";
+			else
+				ModImage = Mod.ImagePath;
+
+			if ( Mod.Enabled )
+				ModName = ModName.Replace("(Disabled) ", "");
+			else
+            {
+				WriteableBitmap iconBitmap = new WriteableBitmap( (BitmapImage)ModDisplayImage.Source );
+
+				// convert to grayscale
+				unsafe
+                {
+					iconBitmap.Lock();
+
+					// https://dzone.com/articles/how-convert-image-gray-scale
+					byte* pBuff = (byte*)iconBitmap.BackBuffer.ToPointer();
+					for (int y = 0; y < iconBitmap.PixelHeight; y++)
+                    {
+						byte* row = pBuff + (y * iconBitmap.BackBufferStride);
+						for (int x = 0; x < iconBitmap.PixelWidth; x++)
+                        {
+							byte grayscale = (byte)((row[x * 4 + 1] + row[x * 4 + 2] + row[x * 4 + 3]) / 3);
+							row[x * 4] = grayscale;
+							row[x * 4 + 1] = grayscale;
+							row[x * 4 + 2] = grayscale;
+							row[x * 4 + 3] = grayscale;
+						}
+					}
+
+					iconBitmap.AddDirtyRect(new Int32Rect(0, 0, iconBitmap.PixelWidth, iconBitmap.PixelHeight));
+					iconBitmap.Unlock();
+				}
+
+				ModDisplayImage.Source = iconBitmap;
+				ModName = "(Disabled) " + ModName;
+			}
+		}
 	}
 }
