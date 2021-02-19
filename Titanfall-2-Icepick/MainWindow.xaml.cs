@@ -51,6 +51,8 @@ namespace Icepick
 			ModDatabase.OnFinishedImportingMod += ModDatabase_OnFinishedImportingMod;
 			ModDatabase.LoadAll();
 
+			CommandLineArgBox.Text = "-novid -noborder -multiple";
+
 			UpdateLauncherSelection();
 		}
 
@@ -235,7 +237,7 @@ namespace Icepick
 				return;
 			}
 
-			SDKInjector.LaunchAndInject( selectedLauncher, gamePath );
+			SDKInjector.LaunchAndInject( selectedLauncher, gamePath, CommandLineArgBox.Text );
 		}
 
 		private void Icepick_Drop( object sender, DragEventArgs e )

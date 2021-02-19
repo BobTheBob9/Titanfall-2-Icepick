@@ -54,6 +54,8 @@
                     <Image Source="/Titanfall-2-Icepick;component/Images/launcher-unpacked.png" Width="32" Height="32"/>
                 </ComboBox>
             </Grid>
+            <TextBox x:Name="CommandLineArgBox" VerticalAlignment="Bottom">
+            </TextBox>
         </Grid>
     </DockPanel>
 </Window>

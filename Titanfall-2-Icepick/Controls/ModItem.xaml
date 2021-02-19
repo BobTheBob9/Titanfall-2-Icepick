@@ -21,6 +21,7 @@
         </Grid.ToolTip>
         <Grid.ContextMenu>
             <ContextMenu>
+                <MenuItem Header="Toggle Enabled" Click="ToggleModEnabled_Click" />
                 <MenuItem x:Name="ViewDetailsMenuItem" Header="View Details" Click="ViewDetails_Click" />
                 <MenuItem Header="Show in Explorer" Click="ShowInExplorer_Click" />
                 <Separator/>

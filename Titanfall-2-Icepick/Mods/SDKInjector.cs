@@ -36,7 +36,7 @@ namespace Icepick.Mods
 		public static event InjectorEventDelegate OnInjectionComplete;
 		public static event InjectorEventDelegate OnInjectionException;
 
-		public static async void LaunchAndInject( Launcher launcher, string gamePath = null )
+		public static async void LaunchAndInject( Launcher launcher, string gamePath = null, string args = "")
 		{
 			if( OnLaunchingProcess != null )
 			{
@@ -57,7 +57,7 @@ namespace Icepick.Mods
 				case Launcher.Unpacked:
 					try
                     {
-						Process newProc = Process.Start("Titanfall2-unpacked.exe", "-multiple");
+						Process newProc = Process.Start("Titanfall2-unpacked.exe", args);
 						await WatchAndInject(newProc.ProcessName, OriginInjectionTimeout, newProc.Id);
 					}
 					catch (Exception ex)

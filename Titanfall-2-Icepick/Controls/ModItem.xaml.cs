@@ -200,27 +200,34 @@ namespace Icepick.Controls
 		}
 
 		private void OnDoubleClick(object sender, MouseButtonEventArgs e)
-		{
-			// honestly this is all really hacky but it's good enough and i wanted to implement this without touching ttf2sdk, be sure to refactor when writing new launcher
-			try
-            {
-				string jsonPath = System.IO.Path.Combine( Mod.Directory, "mod.json" );
+		 => ToggleModEnabled();
 
-				string jsonContent = File.ReadAllText( jsonPath );
-				if ( Mod.Enabled )
+
+		private void ToggleModEnabled_Click(object sender, RoutedEventArgs e)
+		 => ToggleModEnabled();
+
+		private void ToggleModEnabled()
+        {
+ 			// honestly this is all really hacky but it's good enough and i wanted to implement this without touching ttf2sdk, be sure to refactor when writing new launcher
+			try
+			{
+				string jsonPath = System.IO.Path.Combine(Mod.Directory, "mod.json");
+
+				string jsonContent = File.ReadAllText(jsonPath);
+				if (Mod.Enabled)
 					jsonContent = "disabled" + jsonContent; // prevents it from being a valid json file so ttf2sdk won't load it
 				else
-					jsonContent = jsonContent.Substring( "disabled".Length ); // make it valid again
+					jsonContent = jsonContent.Substring("disabled".Length); // make it valid again
 
 				File.WriteAllText(jsonPath, jsonContent);
 
 				Mod.Enabled = !Mod.Enabled;
 				RefreshNameAndImageForDisabledState();
 			}
-			catch ( IOException ex )
-            {
-				MessageBox.Show( $"Encountered an exception when enabling or disabling a mod: {ex}\nThe mod's mod.json file may be unable to be written to!" );
-            }
+			catch (IOException ex)
+			{
+				MessageBox.Show($"Encountered an exception when enabling or disabling a mod: {ex}\nThe mod's mod.json file may be unable to be written to!");
+			}
 		}
 
 		private void RefreshNameAndImageForDisabledState()
@@ -242,6 +249,7 @@ namespace Icepick.Controls
 					iconBitmap.Lock();
 
 					// https://dzone.com/articles/how-convert-image-gray-scale
+					// todo: make this use 30% red, 59% green, 11% blue, might look nicer idk
 					byte* pBuff = (byte*)iconBitmap.BackBuffer.ToPointer();
 					for (int y = 0; y < iconBitmap.PixelHeight; y++)
                     {
@@ -264,5 +272,5 @@ namespace Icepick.Controls
 				ModName = "(Disabled) " + ModName;
 			}
 		}
-	}
+    }
 }
