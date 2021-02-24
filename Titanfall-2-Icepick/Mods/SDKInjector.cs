@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System.IO;
 
 namespace Icepick.Mods
 {
@@ -57,7 +58,9 @@ namespace Icepick.Mods
 				case Launcher.Unpacked:
 					try
                     {
-						Process newProc = Process.Start("Titanfall2-unpacked.exe", args);
+						string unpackedPath = Path.Combine(Path.GetDirectoryName(gamePath), "Titanfall2-unpacked.exe");
+
+						Process newProc = Process.Start(unpackedPath, args);
 						await WatchAndInject(newProc.ProcessName, OriginInjectionTimeout, newProc.Id);
 					}
 					catch (Exception ex)
